@@ -1,6 +1,6 @@
-# docker build --pull -t sonarqube:6.2-rhel7 -t sonarqube .
-FROM registry.access.redhat.com/rhel7
-MAINTAINER Red Hat Systems Engineering <refarch-feedback@redhat.com>
+# docker build --pull -t sonarqube:6.2 -t sonarqube .
+FROM centos:7
+MAINTAINER John Deng (john.deng@outlook.com)
 
 ENV SONAR_VERSION=6.2 \
     SONAR_USER=sonarsrc \
@@ -14,7 +14,7 @@ ENV SONAR_VERSION=6.2 \
 
 LABEL name="sonarqube" \
       vendor="SonarSource" \
-      version="${SONAR_VERSION}-rhel7" \
+      version="${SONAR_VERSION}" \
       release="1" \
       summary="SonarQube" \
       description="SonarQube" \
@@ -24,13 +24,22 @@ LABEL name="sonarqube" \
             $IMAGE' \
       io.k8s.description="SonarQube" \
       io.k8s.display-name="SonarQube" \
-      io.openshift.build.commit.author="Red Hat Systems Engineering <refarch-feedback@redhat.com>" \
+      io.openshift.build.commit.author="John Deng (john.deng@outlook.com)" \
       io.openshift.expose-services="9000:9000" \
       io.openshift.tags="sonarqube,sonar,sonarsource"
 
 COPY help.md /tmp/
+
+RUN yum -y install wget
+
+# 1、进入存放源配置的文件夹  
+RUN mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
+    cd /etc/yum.repos.d/ && \
+    wget http://mirrors.163.com/.help/CentOS7-Base-163.repo && \
+    yum clean all && \
+    yum makecache
+
 RUN yum clean all && yum-config-manager --disable \* &> /dev/null && \
-    yum-config-manager --enable rhel-7-server-rpms,rhel-7-server-optional-rpms &> /dev/null && \
     yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical --setopt=tsflags=nodocs && \
     yum -y install --setopt=tsflags=nodocs golang-github-cpuguy83-go-md2man java-1.8.0-openjdk unzip && \
     go-md2man -in /tmp/help.md -out /help.1 && yum -y remove golang-github-cpuguy83-go-md2man && \
