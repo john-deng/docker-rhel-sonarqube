@@ -18,41 +18,41 @@ objects:
     to:
       kind: Service
       name: sonarqube
-- kind: ImageStream
-  apiVersion: v1
-  metadata:
-    name: sonarqube
-  spec:
-    tags:
-      - name: "${SONARQUBE_BUILD_TAG}"
-        from:
-          kind: DockerImage
-          name: "${SONARQUBE_REPOSITORY_NAME}/${SONARQUBE_IMAGE_NAME}:${SONARQUBE_BUILD_TAG}"
-        importPolicy: {}
-      - name: latest
-        from:
-          kind: ImageStreamTag
-          name: "${SONARQUBE_BUILD_TAG}"
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: "${DATABASE_SERVICE_NAME}"
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: "${DATABASE_VOLUME_CAPACITY}"
-- kind: PersistentVolumeClaim
-  apiVersion: v1
-  metadata:
-    name: sonarqube-extensions
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 512Mi
+# - kind: ImageStream
+#   apiVersion: v1
+#   metadata:
+#     name: sonarqube
+#   spec:
+#     tags:
+#       - name: "${SONARQUBE_BUILD_TAG}"
+#         from:
+#           kind: DockerImage
+#           name: "${SONARQUBE_REPOSITORY_NAME}/${SONARQUBE_IMAGE_NAME}:${SONARQUBE_BUILD_TAG}"
+#         importPolicy: {}
+#       - name: latest
+#         from:
+#           kind: ImageStreamTag
+#           name: "${SONARQUBE_BUILD_TAG}"
+# - kind: PersistentVolumeClaim
+#   apiVersion: v1
+#   metadata:
+#     name: "${DATABASE_SERVICE_NAME}"
+#   spec:
+#     accessModes:
+#     - ReadWriteOnce
+#     resources:
+#       requests:
+#         storage: "${DATABASE_VOLUME_CAPACITY}"
+# - kind: PersistentVolumeClaim
+#   apiVersion: v1
+#   metadata:
+#     name: sonarqube-data
+#   spec:
+#     accessModes:
+#     - ReadWriteOnce
+#     resources:
+#       requests:
+#         storage: 512Mi
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -126,7 +126,7 @@ objects:
         volumes:
         - name: sonarqube-postgresql-data
           persistentVolumeClaim:
-            claimName: "${DATABASE_SERVICE_NAME}"
+            claimName: "${SONARQUBE_POSTGRESQL_PVC_NAME}"
     test: false
     triggers:
     - imageChangeParams:
@@ -205,8 +205,8 @@ objects:
               memory: 1024Mi
           terminationMessagePath: /dev/termination-log
           volumeMounts:
-          - mountPath: /opt/sonarqube/extensions
-            name: sonarqube-extensions
+          - mountPath: /opt/sonar/sonarqube/extensions
+            name: sonarqube-data
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         resources:
@@ -216,9 +216,9 @@ objects:
           runAsUser: 10001
         terminationGracePeriodSeconds: 30
         volumes:
-        - name: sonarqube-extensions
+        - name: sonarqube-data
           persistentVolumeClaim:
-            claimName: sonarqube-extensions
+            claimName: ${SONARQUBE_EXTENSIONS_PVC_NAME}
     test: false
     triggers:
     - type: ConfigChange
