@@ -70,14 +70,6 @@ RUN chown -R ${USER_UID}:0 ${APP_ROOT} && \
     find ${APP_ROOT} -type d -exec chmod g+x {} + && \
     chmod ug+x ${SONARQUBE_HOME}/bin/run.sh
 
-# RUN wget "http://downloads.sonarsource.com/plugins/org/codehaus/sonar-plugins/sonar-scm-git-plugin/1.1/sonar-scm-git-plugin-1.1.jar" \
-#     && wget "https://github.com/SonarSource/sonar-java/releases/download/3.12-RC2/sonar-java-plugin-3.12-build4634.jar" \
-#     && wget "https://github.com/SonarSource/sonar-github/releases/download/1.1-M9/sonar-github-plugin-1.1-SNAPSHOT.jar" \
-#     && wget "https://github.com/SonarSource/sonar-auth-github/releases/download/1.0-RC1/sonar-auth-github-plugin-1.0-SNAPSHOT.jar" \
-#     && wget "https://github.com/QualInsight/qualinsight-plugins-sonarqube-badges/releases/download/qualinsight-plugins-sonarqube-badges-1.2.1/qualinsight-sonarqube-badges-1.2.1.jar" \
-#     && mv *.jar ${SONARQUBE_HOME}/extensions/plugins \
-#     && ls -lah ${SONARQUBE_HOME}/extensions/plugins
-
 USER ${USER_UID}
 WORKDIR ${SONARQUBE_HOME}
 
