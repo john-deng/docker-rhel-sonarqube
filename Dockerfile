@@ -1,9 +1,9 @@
 # docker build --pull -t sonarqube:6.2 -t sonarqube .
-FROM centos:7
+FROM centos:centos7
 MAINTAINER John Deng (john.deng@outlook.com)
 
 ENV SONAR_VERSION=6.2 \
-    SONAR_USER=sonarsrc \
+    SONAR_USER=sonar \
     LANG=en_US.utf8 \
     JAVA_HOME=/usr/lib/jvm/jre \
     # Database configuration
@@ -31,16 +31,9 @@ LABEL name="sonarqube" \
 COPY help.md /tmp/
 
 RUN yum -y install wget
+RUN yum -y install epel-release
 
-# 1、进入存放源配置的文件夹  
-RUN mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup && \
-    cd /etc/yum.repos.d/ && \
-    wget http://mirrors.163.com/.help/CentOS7-Base-163.repo && \
-    yum clean all && \
-    yum makecache
-
-RUN yum clean all && yum-config-manager --disable \* &> /dev/null && \
-    yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical --setopt=tsflags=nodocs && \
+RUN yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical --setopt=tsflags=nodocs && \
     yum -y install --setopt=tsflags=nodocs golang-github-cpuguy83-go-md2man java-1.8.0-openjdk unzip && \
     go-md2man -in /tmp/help.md -out /help.1 && yum -y remove golang-github-cpuguy83-go-md2man && \
     yum clean all

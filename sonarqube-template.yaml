@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 labels:
-  version: 6.2-1
+  version: "6.2"
   group: infrastructure
 metadata:
   annotations:
@@ -70,6 +70,7 @@ objects:
       metadata:
         creationTimestamp: null
         labels:
+          app: sonarqube
           name: sonarqube-postgresql
       spec:
         containers:
@@ -120,6 +121,8 @@ objects:
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         terminationGracePeriodSeconds: 30
+        securityContext: 
+          runAsUser: 26
         volumes:
         - name: sonarqube-postgresql-data
           persistentVolumeClaim:
@@ -159,6 +162,7 @@ objects:
           openshift.io/container.sonarqube.image.entrypoint: run.sh
         creationTimestamp: null
         labels:
+          app: sonarqube
           deploymentconfig: sonarqube
       spec:
         containers:
@@ -208,7 +212,8 @@ objects:
         resources:
           limits:
             memory: "${SONAR_MEMORY_LIMIT}"
-        securityContext: {}
+        securityContext:
+          runAsUser: 10001
         terminationGracePeriodSeconds: 30
         volumes:
         - name: sonarqube-extensions
@@ -270,10 +275,20 @@ parameters:
   displayName: Sonarqube Memory Limit
   description: Maximum amount of memory the sonarqube can use.
   value: 2Gi
-- name: DATABASE_VOLUME_CAPACITY
-  displayName: Volume Capacity
-  description: Volume space available for data, e.g. 512Mi, 2Gi.
-  value: 1Gi
+# - name: DATABASE_VOLUME_CAPACITY
+#   displayName: Volume Capacity
+#   description: Volume space available for data, e.g. 512Mi, 2Gi.
+#   value: 1Gi
+#   required: true
+- name: SONARQUBE_POSTGRESQL_PVC_NAME
+  displayName: Sonarqube database PVC name
+  description: Sonarqube database PVC name
+  value: sonarqube-postgresql-data
+  required: true
+- name: SONARQUBE_EXTENSIONS_PVC_NAME
+  displayName: Sonarqube extensions PVC name
+  description: Sonarqube extensions PVC name
+  value: sonarqube-data
   required: true
 - name: POSTGRESQL_USER
   displayName: PostgreSQL Connection Username
@@ -301,7 +316,7 @@ parameters:
 - name: SONARQUBE_REPOSITORY_NAME
   displayName: SonarQube Repository name
   description: 'Name of the repository containing the SonarQube container image to be used'
-  value: 'goern-docker-registry.bintray.io/goern'
+  value: 'docker.io/vpclub'
   required: true
 - name: SONARQUBE_IMAGE_NAME
   displayName: SonarQube container image name
@@ -310,6 +325,6 @@ parameters:
   required: true
 - name: SONARQUBE_BUILD_TAG
   displayName: SonarQube Image Tag
-  description: SonarQube Image Tag (6.2-rhel7, latest, etc.)
-  value: 6.2-rhel7
+  description: SonarQube Image Tag (6.2, latest, etc.)
+  value: "6.2"
   required: true
